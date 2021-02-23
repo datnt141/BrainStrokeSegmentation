@@ -747,9 +747,10 @@ class ClsNets:
         """i_y_true is Tensor in shape [None, num_classes] in form of one-hot encoding"""
         """i_y_pred is Tensor in shape [None, num_classes] in form of unscaled (original) digits"""
         """tf.nn.sparse_softmax_cross_entropy_with_logits requires unscaled logit"""
-        y_true  = tf.cast(i_y_true, tf.float32)
-        samples = tf.reduce_sum(y_true, axis=0)                  # Result: (num_classes,). Number of samples in each classes
+        y_true  = tf.cast(i_y_true, tf.float32)                    # Shape : (None, num_classes).
+        samples = tf.reduce_sum(y_true, axis=0)                    # Result: (num_classes,). Number of samples in each classes
         weights = tf.divide(samples, tf.reduce_sum(samples))       # Result: (num_classes,). Summation = 1.
+        weights = tf.subtract(1.0, weights)                        # Shape : (num_classes,).
         return ClsNets.weighted_ce(i_weights=weights)(i_y_true=i_y_true,i_y_pred=i_y_pred)
     @staticmethod
     def focal_loss(i_gamma=2.0, i_alpha=0.25):
@@ -759,9 +760,9 @@ class ClsNets:
             """i_y_pred is Tensor in shape [None, num_classes] in form of unscaled (original) digits"""
             y_true = tf.cast(i_y_true, tf.float32)     # Result: (None, num_classes)
             y_pred = tf.nn.softmax(i_y_pred, axis=-1)  # Result: (None,  num_classes)
-            y_pred = tf.clip_by_value(y_pred, epsilon, 1. - epsilon)  # Result: (None,  num_classes)
-            ce     = -y_true * tf.math.log(y_pred)                    # Result: (None,  num_classes)
-            loss = i_alpha * tf.math.pow(1.0 - y_pred, i_gamma) * ce  # Result: (None,  num_classes)
+            y_pred = tf.clip_by_value(y_pred, epsilon, 1. - epsilon)    # Result: (None,  num_classes)
+            ce     = -y_true * tf.math.log(y_pred)                      # Result: (None,  num_classes)
+            loss   = i_alpha * tf.math.pow(1.0 - y_pred, i_gamma) * ce  # Result: (None,  num_classes)
             return tf.reduce_mean(tf.reduce_sum(loss, axis=-1), axis=None)
         return get_fl
     @staticmethod
