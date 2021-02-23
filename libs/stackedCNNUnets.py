@@ -381,7 +381,7 @@ class StackedCnnUNets:
     def get_obj_blks(cls,i_image=None,i_mask=None,i_blk_sizes=None,i_object_size=10000):
         rtn_blocks, rtn_masks = [],[]
         min_object_size = int(0.75*i_object_size)
-        blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(4,4))
+        blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(8,8))
         blocks = cls.forward_block_convert(blocks)
         masks  = cls.forward_block_convert(masks)
         for index, blk in enumerate(blocks):
