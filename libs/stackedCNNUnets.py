@@ -466,8 +466,6 @@ class StackedCnnUNets:
             for blk_ind,blk in enumerate(blocks):
                 blk_mask = blk_masks[blk_ind]
                 assert isinstance(blk_mask,np.ndarray)
-                #print(np.min(blk_mask),np.max(blk_mask))
-                #blk_mask_bin = (blk_mask>0).astype(np.int)
                 if i_cls_flag:#Taking blocks for clsnets
                     if np.average(blk) >= threshold:
                         if np.sum(blk_mask)>max(object_size,mask_size):#Count number of object pixels
