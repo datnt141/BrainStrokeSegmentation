@@ -378,9 +378,9 @@ class StackedCnnUNets:
             rtn.append(row)
         return rtn
     @classmethod
-    def get_obj_blks(cls,i_image=None,i_mask=None,i_blk_sizes=None,i_object_size=-1):
+    def get_obj_blks(cls,i_image=None,i_mask=None,i_blk_sizes=None,i_object_size=10000):
         rtn_blocks, rtn_masks = [],[]
-        min_object_size = max(cls.vseg_object_size,cls.vcls_object_size,i_object_size)
+        min_object_size = min(cls.vseg_object_size,cls.vcls_object_size,i_object_size)
         blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(4,4))
         blocks = cls.forward_block_convert(blocks)
         masks  = cls.forward_block_convert(masks)
@@ -462,12 +462,13 @@ class StackedCnnUNets:
             """Flatten blocks. As my design of get and joint blocks funs"""
             blocks    = self.forward_block_convert(blocks)
             blk_masks = self.forward_block_convert(blk_masks)
+            mask_size = int(np.sum((mask>0).astype(np.int)))
             for blk_ind,blk in enumerate(blocks):
                 blk_mask = blk_masks[blk_ind]
                 assert isinstance(blk_mask,np.ndarray)
                 if i_cls_flag:#Taking blocks for clsnets
                     if np.average(blk) >= threshold:
-                        if np.sum(blk_mask)>object_size:#Count number of object pixels
+                        if np.sum(blk_mask)>min(mask_size,object_size):#Count number of object pixels
                             positive_blks.append(blk)
                         elif np.sum(blk_mask)> 0:
                             pass
@@ -476,20 +477,20 @@ class StackedCnnUNets:
                     else:
                         pass
                 else:#Taking blocks for segnets
-                    if np.sum(blk_mask)>object_size: #Only taking blocks with objects
+                    if np.sum(blk_mask)>min(object_size,mask_size): #Only taking blocks with objects
                         positive_blks.append(blk)        #Image
                         negative_blks.append(blk_mask)   #Mask
                     else:
                         pass
             """Complement blocks"""
-            obj_blocks,obj_masks = self.get_obj_blks(i_image=image,i_mask=mask,i_blk_sizes=blk_size)
+            obj_blocks,obj_masks = self.get_obj_blks(i_image=image,i_mask=mask,i_blk_sizes=blk_size,i_object_size=mask_size)
             for obj_index, obj_blk in enumerate(obj_blocks):
                 positive_blks.append(obj_blk)
                 if i_cls_flag:
                     pass
                 else:
                     negative_blks.append(obj_masks[obj_index])
-            print('Images: {} => Additional blocks = {} vs {} => Sizes = P: {} and N: {}'.format(index, len(obj_blocks), len(obj_masks),len(positive_blks),len(negative_blks)))
+            print('Images: {} => Additional blocks = {} vs {} => Sizes = P: {} and N: {} --- {}'.format(index, len(obj_blocks), len(obj_masks),len(positive_blks),len(negative_blks),mask_size))
         """Save data to TFRecordDB"""
         blocks,labels = [],[]
         if i_cls_flag:
