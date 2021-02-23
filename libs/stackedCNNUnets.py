@@ -380,7 +380,7 @@ class StackedCnnUNets:
     @classmethod
     def get_obj_blks(cls,i_image=None,i_mask=None,i_blk_sizes=None,i_object_size=10000):
         rtn_blocks, rtn_masks = [],[]
-        min_object_size = min(cls.vseg_object_size,cls.vcls_object_size,i_object_size)
+        min_object_size = int(0.75*i_object_size)
         blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(4,4))
         blocks = cls.forward_block_convert(blocks)
         masks  = cls.forward_block_convert(masks)
@@ -483,7 +483,8 @@ class StackedCnnUNets:
                     else:
                         pass
             """Complement blocks"""
-            obj_blocks,obj_masks = self.get_obj_blks(i_image=image,i_mask=mask,i_blk_sizes=blk_size,i_object_size=mask_size)
+            min_object_size = min(object_size,mask_size)
+            obj_blocks,obj_masks = self.get_obj_blks(i_image=image,i_mask=mask,i_blk_sizes=blk_size,i_object_size=min_object_size)
             for obj_index, obj_blk in enumerate(obj_blocks):
                 positive_blks.append(obj_blk)
                 if i_cls_flag:
