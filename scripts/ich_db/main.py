@@ -25,7 +25,7 @@ if __name__ == '__main__':
     cls_params.vflip_ud        = True              # Flip up-down in data augmentation      (Fixed)
     cls_params.vflip_lr        = True              # Flip left-right in data augmentation   (Fixed)
     cls_params.vcrop_ratio     = 0.0               # Crop ratio                             (Fixed)
-    cls_params.vdebug          = False             # Debug flag                             (Fixed)
+    cls_params.vdebug          = True              # Debug flag                             (Fixed)
     """=================================Segnet Parameters============================================================"""
     seg_params.vckpts                    = ckpts         # Checkpoint for storing data              (Fixed)
     seg_params.vinput_shape              = (64, 64, 1)   # Input image shape                        (*)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     seg_params.vflip_ud                  = True          # Flip up-down in data augmentation        (Fixed)
     seg_params.vflip_lr                  = True          # Flip left-right in data augmentation     (Fixed)
     seg_params.vcontinue                 = False         # Continue training or not                 (Fixed)
-    seg_params.vdebug                    = False          # Debug flag                               (Fixed)
+    seg_params.vdebug                    = True          # Debug flag                               (Fixed)
     """=============================================================================================================="""
     StackedCnnUNets.vckpts           = ckpts      # Checkpoint for storing data                                  (Fixed)
     StackedCnnUNets.vcls_params      = cls_params # Classification network parameters                            (Fixed)
