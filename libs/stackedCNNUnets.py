@@ -462,8 +462,7 @@ class StackedCnnUNets:
             """Flatten blocks. As my design of get and joint blocks funs"""
             blocks    = self.forward_block_convert(blocks)
             blk_masks = self.forward_block_convert(blk_masks)
-            mask_size = np.sum((mask>0).astype(np.int))//2
-            print('mask size = ',mask_size)
+            mask_size = np.sum((mask>0).astype(np.int))//10
             for blk_ind,blk in enumerate(blocks):
                 blk_mask = blk_masks[blk_ind]
                 assert isinstance(blk_mask,np.ndarray)
@@ -493,7 +492,7 @@ class StackedCnnUNets:
                     pass
                 else:
                     negative_blks.append(obj_masks[obj_index])
-            print('{} Additional blocks = {} vs {} => Sizes = P: {} and N: {}'.format(index, len(obj_blocks), len(obj_masks),len(positive_blks),len(negative_blks)))
+            print('Images: {} => Additional blocks = {} vs {} => Sizes = P: {} and N: {}'.format(index, len(obj_blocks), len(obj_masks),len(positive_blks),len(negative_blks)))
         """Save data to TFRecordDB"""
         blocks,labels = [],[]
         if i_cls_flag:
