@@ -39,7 +39,7 @@ if __name__ == '__main__':
     seg_params.vweights                  = (0.45, 0.55)  # For using weighted cross entropy         (Fixed)
     seg_params.vnum_epochs               = 40            # Number of training epochs                (Fixed)
     seg_params.vbatch_size               = 64            # Size of batch                            (Fixed)
-    seg_params.vdb_repeat                = 1             # Repeat dataset at single learing rate    (Fixed)
+    seg_params.vdb_repeat                = 10            # Repeat dataset at single learing rate    (Fixed)
     seg_params.vcare_background          = False         # Consider background as an object or not  (Fixed)
     seg_params.vflip_ud                  = True          # Flip up-down in data augmentation        (Fixed)
     seg_params.vflip_lr                  = True          # Flip left-right in data augmentation     (Fixed)
