@@ -381,7 +381,7 @@ class StackedCnnUNets:
     def get_obj_blks(cls,i_image=None,i_mask=None,i_blk_sizes=None,i_object_size=-1):
         rtn_blocks, rtn_masks = [],[]
         min_object_size = max(cls.vseg_object_size,cls.vcls_object_size,i_object_size)
-        blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(4,4))
+        blocks, masks = cls.get_blks(i_image=i_image,i_mask=i_mask,i_blk_sizes=i_blk_sizes,i_blk_strides=(16,16))
         blocks = cls.forward_block_convert(blocks)
         masks  = cls.forward_block_convert(masks)
         for index, blk in enumerate(blocks):
@@ -389,7 +389,6 @@ class StackedCnnUNets:
             if np.sum(mask)>min_object_size:
                 rtn_blocks.append(blk)
                 rtn_masks.append(mask)
-        print('Additional blocks = {} vs {}'.format(len(rtn_blocks),len(rtn_masks)))
         return rtn_blocks,rtn_masks
     """Prepare data for training"""
     def pipeline(self,i_record=None,i_cls_flag=True,i_train_flag=True):
@@ -494,7 +493,7 @@ class StackedCnnUNets:
                     pass
                 else:
                     negative_blks.append(obj_masks[obj_index])
-            print(len(positive_blks),len(negative_blks))
+            print('{} Additional blocks = {} vs {} => Sizes = P: {} and N: {}'.format(index, len(obj_blocks), len(obj_masks),len(positive_blks),len(negative_blks)))
         """Save data to TFRecordDB"""
         blocks,labels = [],[]
         if i_cls_flag:
