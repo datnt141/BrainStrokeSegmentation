@@ -493,7 +493,7 @@ class ClsNets:
         elif self.model_name == 'cCNN_tiny':#Custom CNN
             return ClsNets.custom_cnn_tiny(i_input_shape=self.image_shape, i_filters=32, i_multiscale=False,i_num_classes=self.num_classes)
         elif self.model_name == 'cCNN_tiny_tiny':
-            return ClsNets.custom_cnn_tiny_tiny(i_input_shape=self.image_shape, i_filters=32, i_multiscale=False,i_num_classes=self.num_classes)
+            return ClsNets.custom_cnn_tiny_tiny(i_input_shape=self.image_shape, i_filters=16, i_multiscale=False,i_num_classes=self.num_classes)
         elif self.model_name == 'attCNN':
             assert self.input_shape[0]>=64
             assert self.input_shape[1]>=64
@@ -750,7 +750,7 @@ class ClsNets:
         y_true  = tf.cast(i_y_true, tf.float32)                    # Shape : (None, num_classes).
         samples = tf.reduce_sum(y_true, axis=0)                    # Result: (num_classes,). Number of samples in each classes
         weights = tf.divide(samples, tf.reduce_sum(samples))       # Result: (num_classes,). Summation = 1.
-        weights = tf.subtract(1.0, weights)                        # Shape : (num_classes,).
+        weights = tf.multiply(tf.reduce_sum(samples),tf.subtract(1.0, weights))  # Shape : (num_classes,).
         return ClsNets.weighted_ce(i_weights=weights)(i_y_true=i_y_true,i_y_pred=i_y_pred)
     @staticmethod
     def focal_loss(i_gamma=2.0, i_alpha=0.25):

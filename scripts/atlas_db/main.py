@@ -1,11 +1,11 @@
 import os
 from libs.logs import Logs
 from libs.sysParams import SysParams
-from libs.datasets.ich_db import ICH_DB
 from libs.stackedCNNUnets import StackedCnnUNets
+from libs.datasets.atlas_db import ATLAS_STANDARD
 if __name__ == '__main__':
     num_folds  = 5
-    fold_index = 2
+    fold_index = 1
     """=================================Clsnet Parameters============================================================"""
     ckpts      = os.path.join(os.getcwd(), 'ckpts', 'Fold_{}_of_{}'.format(fold_index, num_folds))
     cls_params = SysParams()
@@ -18,9 +18,9 @@ if __name__ == '__main__':
     cls_params.vlr             = 0.0001            # Initial Learning rate                  (Fixed)
     cls_params.vloss           = 'swCE'            # Name of loss method                    (Fixed)
     cls_params.vweights        = (0.45, 0.55)      # For using weighted cross entropy       (Fixed)
-    cls_params.vnum_epochs     = 20                # Number of training epochs              (Fixed)
+    cls_params.vnum_epochs     = 10                # Number of training epochs              (Fixed)
     cls_params.vbatch_size     = 128               # Size of batch                          (Fixed)
-    cls_params.vdb_repeat      = 10                # Repeat dataset at single learing rate  (Fixed)
+    cls_params.vdb_repeat      = 2                 # Repeat dataset at single learing rate  (Fixed)
     cls_params.vcontinue       = False             # Continue training or not               (Fixed)
     cls_params.vflip_ud        = True              # Flip up-down in data augmentation      (Fixed)
     cls_params.vflip_lr        = True              # Flip left-right in data augmentation   (Fixed)
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     StackedCnnUNets.vdebug           = False      # Debug flag                                                   (Fixed)
     trainer = StackedCnnUNets()                   #(Fixed)
     """Get sample dataset"""
-    ich_dber = ICH_DB(i_tsize=(512,512),i_num_folds=num_folds)
-    train_db, val_db = ich_dber.call(i_fold_index=fold_index)
+    atlas_dber = ATLAS_STANDARD(i_tsize=(256,256),i_num_folds=num_folds)
+    train_db, val_db = atlas_dber.get_data(i_fold_index=fold_index,i_axis=2)
     trainer.train(i_train_db=train_db, i_val_db=val_db)                     #(Fixed)
     #trainer.eval(i_db=train_db)                                            #(Fixed)
     trainer.eval(i_db=val_db)                                               #(Fixed)
