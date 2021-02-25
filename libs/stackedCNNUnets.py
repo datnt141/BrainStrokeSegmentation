@@ -139,10 +139,10 @@ class StackedCnnUNets:
         """Performance measurement"""
         evaluer = SegMetrics_3D()
         measures, measure_mean, measure_std, global_measures = evaluer.measures(i_labels=labels,i_preds=preds,i_object_index=1)
-        Logs.log('Measure shape  (3D) = {}'.format(measures.shape))
-        Logs.log('Measure mean   (3D) = {}'.format(measure_mean))
-        Logs.log('Measure std    (3D) = {}'.format(measure_std))
-        Logs.log('Measuge Global (3D) = {}'.format(global_measures))
+        Logs.log('Measure shape (3D) = {}'.format(measures.shape))
+        Logs.log('Measure mean  (3D) = {}'.format(measure_mean))
+        Logs.log('Measure std   (3D) = {}'.format(measure_std))
+        Logs.log('Measuge Global(3D) = {}'.format(global_measures))
         return labels, preds
     """Predictions"""
     def cls_predict(self,i_image=None):
@@ -242,7 +242,7 @@ class StackedCnnUNets:
                 i_image.dtype)  # Only accept normal RGB image (0~255)
             """Block extraction"""
             height, width, depth = i_image.shape
-            mask = np.zeros(shape=(height, width, 1))
+            mask           = np.zeros(shape=(height, width, 1))
             blocks, masks  = self.get_blks(i_image=i_image, i_mask=mask, i_blk_sizes=self.vcls_isize,i_blk_strides=self.vcls_strides)
             num_blk_height = len(blocks)
             num_blk_width  = len(blocks[0])
@@ -251,7 +251,7 @@ class StackedCnnUNets:
             assert len(blocks.shape) == 4, 'Got shape: {}'.format(blocks.shape)  # Shape: (None, blk_height, blk_width, nchannels)
             assert blocks.shape[-1] == depth, 'Got shape: {}'.format(blocks.shape)  # Shape: (None, blk_height, blk_width, nchannels)
             """Preclassify based on block gray level"""
-            block_means = [np.mean(blk) for blk in blocks]
+            block_means     = [np.mean(blk) for blk in blocks]
             pre_pred_labels = [x > self.vcls_sgray_level for x in block_means]
             pre_pred_labels = np.array(pre_pred_labels, dtype=np.float)
             """Prediction. DONOT Normalize data"""
@@ -265,7 +265,6 @@ class StackedCnnUNets:
             pred_blocks = [make_pred_image(i_pred_label=i) for i in pred_labels]
             pred_blocks = self.backward_block_convert(i_blocks=pred_blocks, i_height=num_blk_height,i_width=num_blk_width)
             pred_image_cls  = self.join_blks(i_blks=pred_blocks,i_steps=self.vcls_strides)  # Binary mask image with value of 0s and 1s
-            Logs.log('cls pred_image shape = {}'.format(pred_image_cls.shape))
             """Segmentation Prediction"""
             preds = self.segnet.predict(i_image=blocks)  # N-by256-by-256-by-1 for example.
             """Scaling preds to be same as the original"""
@@ -274,7 +273,8 @@ class StackedCnnUNets:
                 spreds.append(SupFns.scale_mask(i_mask=pred, i_tsize=self.vseg_isize))
             preds      = self.backward_block_convert(spreds, num_blk_height, num_blk_width)
             pred_image_seg = self.join_blks(i_blks=preds, i_steps=self.vseg_strides, i_overlapped_adjust=True)
-            Logs.log('seg pred_image shape = {}'.format(pred_image_seg.shape))
+            #Logs.log('cls pred_image shape = {}'.format(pred_image_cls.shape))
+            #Logs.log('seg pred_image shape = {}'.format(pred_image_seg.shape))
             pred_image = (pred_image_cls * pred_image_seg).astype(np.uint8)
             if self.vdebug:
                 plt.subplot(1, 4, 1)
@@ -294,22 +294,26 @@ class StackedCnnUNets:
     def predict(self,i_image=None):
         assert isinstance(i_image,np.ndarray), 'Got type: {}'.format(type(i_image))
         """Prediction"""
-        cls_pred = self.cls_predict(i_image=i_image)[-1]
-        seg_pred = self.seg_predict(i_image=i_image)
-        """Combining predictions"""
-        pred_image = (cls_pred * seg_pred).astype(np.uint8)
-        if self.vdebug:
-            plt.subplot(1, 4, 1)
-            plt.imshow(i_image)
-            plt.subplot(1, 4, 2)
-            plt.imshow(cls_pred)
-            plt.subplot(1, 4, 3)
-            plt.imshow(seg_pred)
-            plt.subplot(1, 4, 4)
-            plt.imshow(pred_image)
-            plt.show()
+        pred_image = self.predict_all(i_image=i_image)
+        if isinstance(pred_image,bool):
+            cls_pred = self.cls_predict(i_image=i_image)[-1]
+            seg_pred = self.seg_predict(i_image=i_image)
+            """Combining predictions"""
+            pred_image = (cls_pred * seg_pred).astype(np.uint8)
+            if self.vdebug:
+                plt.subplot(1, 4, 1)
+                plt.imshow(i_image)
+                plt.subplot(1, 4, 2)
+                plt.imshow(cls_pred)
+                plt.subplot(1, 4, 3)
+                plt.imshow(seg_pred)
+                plt.subplot(1, 4, 4)
+                plt.imshow(pred_image)
+                plt.show()
+            else:
+                pass
         else:
-            pass
+            assert isinstance(pred_image,np.ndarray)
         return pred_image
     """Support functions"""
     @classmethod
