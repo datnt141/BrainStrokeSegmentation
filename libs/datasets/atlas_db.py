@@ -181,8 +181,6 @@ if __name__ == '__main__':
     print('This module is to prepare raw data using standard ATLAS dataset')
     import matplotlib.pyplot as plt
     exampler = ATLAS_STANDARD()
-    val_patients = exampler.get_val_patient(i_fold_index=1,i_axis=2)
-    raise Exception('')
     train_db, val_db = exampler.get_data(i_fold_index=1,i_axis=2)
     for element in train_db:
         img, msk = element
