@@ -62,9 +62,9 @@ if __name__ == '__main__':
     StackedCnnUNets.vdebug           = False      # Debug flag                                                   (Fixed)
     trainer = StackedCnnUNets()                   #(Fixed)
     """Get sample dataset"""
-    atlas_dber = ATLAS_STANDARD(i_tsize=(256,256),i_num_folds=num_folds)
+    atlas_dber       = ATLAS_STANDARD(i_tsize=(256,256),i_num_folds=num_folds)
     train_db, val_db = atlas_dber.get_data(i_fold_index=fold_index,i_axis=2)
-    trainer.train(i_train_db=train_db, i_val_db=val_db)                      #(Fixed)
+    trainer.train(i_train_db=train_db, i_val_db=val_db)                       #(Fixed)
     """2D Evaluation"""
     #trainer.eval(i_db=val_db)                                                # (Fixed)
     """3D Evaluation"""

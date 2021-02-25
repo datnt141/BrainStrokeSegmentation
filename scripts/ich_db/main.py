@@ -62,7 +62,7 @@ if __name__ == '__main__':
     StackedCnnUNets.vdebug           = False      # Debug flag                                                   (Fixed)
     trainer = StackedCnnUNets()                   #(Fixed)
     """Get sample dataset"""
-    ich_dber = ICH_DB(i_tsize=(512,512),i_num_folds=num_folds)
+    ich_dber         = ICH_DB(i_tsize=(512,512),i_num_folds=num_folds)
     train_db, val_db = ich_dber.call(i_fold_index=fold_index)
     trainer.train(i_train_db=train_db, i_val_db=val_db)                     #(Fixed)
     """2D Evaluation"""
