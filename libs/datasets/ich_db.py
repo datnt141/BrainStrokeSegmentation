@@ -7,6 +7,7 @@ import pandas as pd
 import nibabel as nib
 from PIL import Image
 from imageio import imwrite
+from libs.commons import ListTuples
 from libs.datasets.nfolds import sNFolds
 db_path = r'G:\roots\segmentations\brain_stroke\ICH\downloaded_db\ich_db'
 """=======================Author: datnt================================================================="""
@@ -145,6 +146,26 @@ class ICH_DB:
         val_labels   = (val_labels>0).astype(np.uint8)
         """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
         return list(zip(train_images,train_labels)),list(zip(val_images,val_labels))
+    def get_val_patient(self,i_fold_index=1):
+        assert isinstance(i_fold_index, int)
+        assert 0 < i_fold_index <= self.num_folds
+        data     = self.get_data()
+        val_patients = []
+        train_data, val_data = self.nfolds(i_fold_index=i_fold_index, i_num_aug_samples=1)
+        for index, item in enumerate(data):
+            if index in val_data:
+                item_images = item['images']
+                item_masks  = item['masks']
+                item_masks  = (item_masks>0).astype(np.uint8)
+                cmp = ListTuples.compare(i_x=item_images.shape,i_y=item_masks.shape)
+                val_patients.append((item_images,item_masks)) #Format: ((images,masks),...,(images,masks))
+                assert np.sum(cmp)==0
+                assert np.min(item_masks)==0
+                assert np.max(item_masks)==1
+            else:
+                pass  # raise Exception('Error?')
+        """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
+        return val_patients
 """==========================================================================================="""
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

@@ -99,7 +99,7 @@ class ATLAS_STANDARD:
         assert np.sum(ListTuples.compare(images.shape,labels.shape))==0
         assert len(images.shape) == 3, 'Got value: {}'.format(images.shape)
         return images,labels
-    def get_data(self,i_fold_index=1,i_axis=0):
+    def get_data(self,i_fold_index=1,i_axis=2):
         assert isinstance(i_fold_index,int), 'Got type: {}'.format(type(i_fold_index))
         assert 0<i_fold_index<=self.num_folds
         assert isinstance(i_axis,int) #Axis of 3D volume where we taking scan images
@@ -134,11 +134,55 @@ class ATLAS_STANDARD:
                     raise Exception()
         """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
         return list(zip(train_images,train_labels)),list(zip(val_images,val_labels))
+    def get_val_patient(self, i_fold_index=1,i_axis=2):
+        assert isinstance(i_fold_index, int), 'Got type: {}'.format(type(i_fold_index))
+        assert 0 < i_fold_index <= self.num_folds
+        assert isinstance(i_axis, int)  # Axis of 3D volume where we taking scan images
+        assert i_axis in (0, 1, 2)  # As the 3D volume of scan images
+        train_index, val_index = self.nfolds(i_fold_index=i_fold_index)
+        val_patients = []
+        for index, patient in enumerate(self.patients):
+            if index in val_index:
+                print('Loading index {}: {}'.format(index, patient))
+                val_images,val_labels = [],[]
+                images, labels = self.get_nii_data(i_nii_file_path=patient)
+                num_images = images.shape[i_axis]
+                for img_index in range(num_images):
+                    if i_axis == 0:
+                        image = images[img_index, :, :]
+                        label = labels[img_index, :, :]
+                    elif i_axis == 1:
+                        image = images[:, img_index, :]
+                        label = labels[:, img_index, :]
+                    else:
+                        image = images[:, :, img_index]
+                        label = labels[:, :, img_index]
+                    image = SupFns.imresize(i_image=image, i_tsize=self.tsize)
+                    label = (label > 0).astype(np.int)
+                    label = SupFns.scale_mask(i_mask=label, i_tsize=self.tsize)
+                    if index in val_index:
+                        val_images.append(image)
+                        val_labels.append(label)
+                    else:
+                        raise Exception()
+                val_images = np.array(val_images)
+                val_labels = np.array(val_labels)
+                val_patients.append((val_images,val_labels)) #Format: ((images,masks),...,(images,masks))
+                cmp = ListTuples.compare(i_x=val_images.shape, i_y=val_labels.shape)
+                assert np.sum(cmp) == 0
+                assert np.min(val_labels)==0
+                assert np.max(val_labels)==1
+            else:
+                pass
+        """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
+        return val_patients
 """=================================================================================================================="""
 if __name__ == '__main__':
     print('This module is to prepare raw data using standard ATLAS dataset')
     import matplotlib.pyplot as plt
     exampler = ATLAS_STANDARD()
+    val_patients = exampler.get_val_patient(i_fold_index=1,i_axis=2)
+    raise Exception('')
     train_db, val_db = exampler.get_data(i_fold_index=1,i_axis=2)
     for element in train_db:
         img, msk = element
