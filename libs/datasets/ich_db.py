@@ -157,11 +157,11 @@ class ICH_DB:
                 item_images = item['images']
                 item_masks  = item['masks']
                 item_masks  = (item_masks>0).astype(np.uint8)
+                item_images = item_images.astype(np.uint8)
                 cmp = ListTuples.compare(i_x=item_images.shape,i_y=item_masks.shape)
                 val_patients.append((item_images,item_masks)) #Format: ((images,masks),...,(images,masks))
+                print('Data shape = {} vs {} with MIN = {} and MAX = {}'.format(item_images.shape,item_masks.shape,np.min(item_masks),np.max(item_masks)))
                 assert np.sum(cmp)==0
-                assert np.min(item_masks)==0
-                assert np.max(item_masks)==1
             else:
                 pass  # raise Exception('Error?')
         """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""

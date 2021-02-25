@@ -1,4 +1,5 @@
 import numpy as np
+from libs.logs import Logs
 from libs.commons import ListTuples
 """=================================================================================================================="""
 class SegMetrics_2D:
@@ -220,19 +221,34 @@ class SegMetrics_3D:
         self.TNs = 0.
         self.FPs = 0.
         self.FNs = 0.
+        self.preds  = []  #Use for measuring 2D performance
+        self.labels = []  #Use for measuring 2D performance
     def erase_indicators(self):
         self.TPs = 0.  # Positive => Positive
         self.FPs = 0.  # Negative => Positive
         self.TNs = 0.  # Negative => Negative
         self.FNs = 0.  # Positive => Negative
+        self.preds.clear()
+        self.labels.clear()
     def get_measures(self, i_labels=None,i_preds=None,i_object_index=1):
         """i_labels and i_preds are labels and preds of a 3D images"""
         assert isinstance(i_labels,np.ndarray)
         assert isinstance(i_preds,np.ndarray)
         assert isinstance(i_object_index,int)
         assert i_object_index>0
-        assert len(i_labels.shape)==3 #Height x Width x Depth
-        assert len(i_preds.shape)==3  #Height x Width x Depth
+        print(i_labels.shape,i_preds.shape)
+        if len(i_labels.shape)==3:
+            i_labels = np.expand_dims(i_labels,axis=-1)
+        else:
+            assert len(i_labels.shape) == 4
+            assert i_labels.shape[-1] == 1
+        if len(i_preds.shape)==3:
+            i_preds = np.expand_dims(i_preds,axis=-1)
+        else:
+            assert len(i_preds.shape)== 4
+            assert i_preds.shape[-1] == 1
+        assert len(i_labels.shape)==4 #None x Height x Width x Depth
+        assert len(i_preds.shape)==4  #None x Height x Width x Depth
         assert np.sum(ListTuples.compare(i_x=i_labels.shape,i_y=i_preds.shape))==0
         TNs, FPs, TPs,FNs = 0, 0, 0, 0
         for index,label in enumerate(i_labels):
@@ -242,6 +258,8 @@ class SegMetrics_3D:
             FPs += FP
             TPs += TP
             FNs += FN
+            self.preds.append(pred)
+            self.labels.append(label)
         """Update to all dataset"""
         self.TPs += TPs
         self.TNs += TNs
@@ -249,13 +267,14 @@ class SegMetrics_3D:
         self.FNs += FNs
         """Measurement for single 3D image"""
         measures = list()
-        measures.append(SegMetrics_2D.get_dice(i_TP=TPs, i_FP=FPs, i_FN=FNs))  # Dice
-        measures.append(SegMetrics_2D.get_Jaccard(i_TP=TPs, i_FP=FPs, i_FN=FNs))  # Jaccard
-        measures.append(SegMetrics_2D.get_precision(i_TP=TPs, i_FP=FPs))  # Precision
-        measures.append(SegMetrics_2D.get_recall(i_TP=TPs, i_FN=FNs))  # Recall
-        measures.append(SegMetrics_2D.get_recall(i_TP=TPs, i_FN=FNs))  # Sensitivity = Recall
-        measures.append(SegMetrics_2D.get_specificity(i_TN=TNs, i_FP=FPs))  # Specificity
+        measures.append(SegMetrics_2D.get_dice(i_TP=TPs, i_FP=FPs, i_FN=FNs))                # Dice
+        measures.append(SegMetrics_2D.get_Jaccard(i_TP=TPs, i_FP=FPs, i_FN=FNs))             # Jaccard
+        measures.append(SegMetrics_2D.get_precision(i_TP=TPs, i_FP=FPs))                     # Precision
+        measures.append(SegMetrics_2D.get_recall(i_TP=TPs, i_FN=FNs))                        # Recall
+        measures.append(SegMetrics_2D.get_recall(i_TP=TPs, i_FN=FNs))                        # Sensitivity = Recall
+        measures.append(SegMetrics_2D.get_specificity(i_TN=TNs, i_FP=FPs))                   # Specificity
         measures.append(SegMetrics_2D.get_accuracy(i_TP=TPs, i_TN=TNs, i_FP=FPs, i_FN=FNs))  # Overall Accuracy
+        print(measures)
         return measures
     def measures(self,i_labels=None,i_preds=None,i_object_index=1):
         assert isinstance(i_labels,(list,tuple))
@@ -270,13 +289,26 @@ class SegMetrics_3D:
         measures = np.array(measures)
         """Overall Measure (global)"""
         global_measures = list()
-        global_measures.append(SegMetrics_2D.get_dice(i_TP=self.TPs, i_FP=self.FPs, i_FN=self.FNs))  # Dice
+        global_measures.append(SegMetrics_2D.get_dice(i_TP=self.TPs, i_FP=self.FPs, i_FN=self.FNs))     # Dice
         global_measures.append(SegMetrics_2D.get_Jaccard(i_TP=self.TPs, i_FP=self.FPs, i_FN=self.FNs))  # Jaccard
-        global_measures.append(SegMetrics_2D.get_precision(i_TP=self.TPs, i_FP=self.FPs))  # Precision
-        global_measures.append(SegMetrics_2D.get_recall(i_TP=self.TPs, i_FN=self.FNs))  # Recall
-        global_measures.append(SegMetrics_2D.get_recall(i_TP=self.TPs, i_FN=self.FNs))  # Sensitivity = Recall
-        global_measures.append(SegMetrics_2D.get_specificity(i_TN=self.TNs, i_FP=self.FPs))  # Specificity
+        global_measures.append(SegMetrics_2D.get_precision(i_TP=self.TPs, i_FP=self.FPs))               # Precision
+        global_measures.append(SegMetrics_2D.get_recall(i_TP=self.TPs, i_FN=self.FNs))                  # Recall
+        global_measures.append(SegMetrics_2D.get_recall(i_TP=self.TPs, i_FN=self.FNs))                  # Sensitivity = Recall
+        global_measures.append(SegMetrics_2D.get_specificity(i_TN=self.TNs, i_FP=self.FPs))             # Specificity
         global_measures.append(SegMetrics_2D.get_accuracy(i_TP=self.TPs, i_TN=self.TNs, i_FP=self.FPs, i_FN=self.FNs))  # Overall Accuracy
+        """2D Performance measurement"""
+        """Performance measurement"""
+        evaluer = SegMetrics_2D(i_num_classes=i_object_index+1, i_care_background=False)
+        Logs.log('Using entire dataset')
+        measures2d, measure_mean2d, measure_std2d = evaluer.eval(i_labels=self.labels, i_preds=self.preds, i_object_care=False)
+        Logs.log('Measure shape = {}'.format(measures2d.shape))
+        Logs.log('Measure mean  = {}'.format(measure_mean2d))
+        Logs.log('Measure std   = {}'.format(measure_std2d))
+        Logs.log('Using sub dataset that only consider images containing objects')
+        measures2d, measure_mean2d, measure_std2d = evaluer.eval(i_labels=self.labels, i_preds=self.preds, i_object_care=True)
+        Logs.log('Measure shape = {}'.format(measures2d.shape))
+        Logs.log('Measure mean  = {}'.format(measure_mean2d))
+        Logs.log('Measure std   = {}'.format(measure_std2d))
         self.erase_indicators()
         return measures,SegMetrics_2D.get_mean(measures),SegMetrics_2D.get_std(measures),global_measures
 """=================================================================================================================="""

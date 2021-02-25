@@ -6,8 +6,8 @@ from libs.commons import SupFns
 from libs.sysParams import SysParams
 from libs.clsnets import ImageClsNets
 from libs.segnets import ImageSegNets
-from libs.metrics import SegMetrics_2D
 from libs.datasets.tfrecords import TFRecordDB
+from libs.metrics import SegMetrics_2D,SegMetrics_3D
 np_int_types = (np.int, np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64)
 """=================================================================================================================="""
 class StackedCnnUNets:
@@ -112,6 +112,40 @@ class StackedCnnUNets:
         Logs.log('Measure mean  = {}'.format(measure_mean))
         Logs.log('Measure std   = {}'.format(measure_std))
         return labels,preds
+    def eval3d(self,i_db=None):
+        """As my design, i_db is in format ((images,masks),...,(images,masks))"""
+        assert isinstance(i_db,(list,tuple))
+        num_patients = len(i_db)
+        Logs.log('Number of patients = {}'.format(num_patients))
+        preds,labels = [],[]
+        image_index = 0
+        for index, patient in enumerate(i_db):
+            if index>1:
+                break
+            p_preds,p_labels = [],[]
+            images, masks = patient
+            num_images = images.shape[-1]
+            for p_index in range(num_images):
+                p_image= images[:,:,p_index]
+                p_mask = masks[:,:,p_index]
+                pred_image = self.predict(i_image=p_image)
+                p_preds.append(pred_image)
+                p_labels.append(p_mask)
+                Logs.log('Image index = {} with pred_shape = {} and label_shape = {}'.format(image_index,pred_image.shape,p_mask.shape))
+                image_index += 1
+            p_preds = np.array(p_preds)
+            p_labels= np.array(p_labels)
+            preds.append(p_preds)
+            labels.append(p_labels)
+        """Measurement"""
+        """Performance measurement"""
+        evaluer = SegMetrics_3D()
+        measures, measure_mean, measure_std, global_measures = evaluer.measures(i_labels=labels,i_preds=preds,i_object_index=1)
+        Logs.log('Measure shape = {}'.format(measures.shape))
+        Logs.log('Measure mean  = {}'.format(measure_mean))
+        Logs.log('Measure std   = {}'.format(measure_std))
+        Logs.log('Measuge Global= {}'.format(global_measures))
+        return labels, preds
     """Predictions"""
     def cls_predict(self,i_image=None):
         """Note that: clsnet here is used to classify an image block into two classess of with or without objects"""
@@ -156,7 +190,7 @@ class StackedCnnUNets:
         pred_blocks = [make_pred_image(i_pred_label=i) for i in pred_labels]
         pred_blocks = self.backward_block_convert(i_blocks=pred_blocks,i_height=num_blk_height,i_width=num_blk_width)
         pred_image  = self.join_blks(i_blks=pred_blocks, i_steps=self.vcls_strides) #Binary mask image with value of 0s and 1s
-        print('cls pred_image shape = ',pred_image.shape)
+        Logs.log('cls pred_image shape = {}'.format(pred_image.shape))
         return preds, pred_image
     def seg_predict(self,i_image=None):
         """Note that: The segmentation problem has no overlapped objects (what can happened in detection problem)"""
@@ -185,6 +219,7 @@ class StackedCnnUNets:
             spreds.append(SupFns.scale_mask(i_mask=pred,i_tsize=self.vseg_isize))
         preds      = self.backward_block_convert(spreds,num_blk_height,num_blk_width)
         pred_image = self.join_blks(i_blks=preds, i_steps=self.vseg_strides,i_overlapped_adjust=True)
+        Logs.log('seg pred_image shape = {}'.format(pred_image.shape))
         return pred_image #Shape (height, width,1) with gray level from 0 to (self.segnet.vnum_classes -1).
     def predict(self,i_image=None):
         assert isinstance(i_image,np.ndarray), 'Got type: {}'.format(type(i_image))
