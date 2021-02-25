@@ -2,10 +2,10 @@ import os
 import numpy as np
 from libs.logs import Logs
 import matplotlib.pyplot as plt
-from libs.commons import SupFns
 from libs.sysParams import SysParams
 from libs.clsnets import ImageClsNets
 from libs.segnets import ImageSegNets
+from libs.commons import SupFns,ListTuples
 from libs.datasets.tfrecords import TFRecordDB
 from libs.metrics import SegMetrics_2D,SegMetrics_3D
 np_int_types = (np.int, np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64)
@@ -219,6 +219,78 @@ class StackedCnnUNets:
         pred_image = self.join_blks(i_blks=preds, i_steps=self.vseg_strides,i_overlapped_adjust=True)
         Logs.log('seg pred_image shape = {}'.format(pred_image.shape))
         return pred_image #Shape (height, width,1) with gray level from 0 to (self.segnet.vnum_classes -1).
+    def predict_all(self,i_image=None):
+        cmp_size   = int(np.sum(ListTuples.compare(i_x=self.vcls_isize,i_y=self.vseg_isize)))
+        cmp_stride = int(np.sum(ListTuples.compare(i_x=self.vcls_strides,i_y=self.vseg_strides)))
+        """Support function for making prediction block image"""
+        def make_pred_image(i_pred_label=0.):
+            assert isinstance(i_pred_label, (float, int)), 'Got type: {}'.format(type(i_pred_label))
+            if i_pred_label > 0:
+                return np.ones(shape=(self.vcls_isize[0], self.vcls_isize[1], 1), dtype=np.int)
+            else:
+                return np.zeros(shape=(self.vcls_isize[0], self.vcls_isize[1], 1), dtype=np.int)
+        if cmp_size==0 and cmp_stride==0:
+            assert isinstance(i_image, np.ndarray), 'Got type: {}'.format(type(i_image))
+            assert len(i_image.shape) in (2, 3), 'Got shape: {}'.format(i_image.shape)
+            if len(i_image.shape) == 2:  # Gray image with shape (height, width)
+                i_image = np.expand_dims(i_image, -1)
+            else:  # RGB image with shape (height, width, depth)
+                assert len(i_image.shape) == 3
+            assert i_image.shape[-1] in (1, 3), 'Got shape: {}'.format(
+                i_image.shape)  # Only gray or color images are accepted
+            assert i_image.dtype in (np.uint8,), 'Got dtype: {}'.format(
+                i_image.dtype)  # Only accept normal RGB image (0~255)
+            """Block extraction"""
+            height, width, depth = i_image.shape
+            mask = np.zeros(shape=(height, width, 1))
+            blocks, masks  = self.get_blks(i_image=i_image, i_mask=mask, i_blk_sizes=self.vcls_isize,i_blk_strides=self.vcls_strides)
+            num_blk_height = len(blocks)
+            num_blk_width  = len(blocks[0])
+            blocks = self.forward_block_convert(blocks)
+            blocks = np.array(blocks)  # Shape: (None, blk_height, blk_width, nchannels)
+            assert len(blocks.shape) == 4, 'Got shape: {}'.format(blocks.shape)  # Shape: (None, blk_height, blk_width, nchannels)
+            assert blocks.shape[-1] == depth, 'Got shape: {}'.format(blocks.shape)  # Shape: (None, blk_height, blk_width, nchannels)
+            """Preclassify based on block gray level"""
+            block_means = [np.mean(blk) for blk in blocks]
+            pre_pred_labels = [x > self.vcls_sgray_level for x in block_means]
+            pre_pred_labels = np.array(pre_pred_labels, dtype=np.float)
+            """Prediction. DONOT Normalize data"""
+            preds = self.clsnet.predict(i_image=blocks)  # Shape: (None, num_classes) where None is number of blocks extracted from image
+            """As my design, preds has shape of (None, 2) as indicates the with/without existance of object in block"""
+            pred_labels = (preds[:, 1] - preds[:,0]) > self.vcls_th  # self.vcls_th = 0 for conventional case (i. e. argmax)
+            assert isinstance(pred_labels, np.ndarray)
+            assert len(pred_labels.shape) == 1  # Shape (None, )
+            pred_labels = pred_labels.astype(np.float)
+            pred_labels = pred_labels * pre_pred_labels
+            pred_blocks = [make_pred_image(i_pred_label=i) for i in pred_labels]
+            pred_blocks = self.backward_block_convert(i_blocks=pred_blocks, i_height=num_blk_height,i_width=num_blk_width)
+            pred_image_cls  = self.join_blks(i_blks=pred_blocks,i_steps=self.vcls_strides)  # Binary mask image with value of 0s and 1s
+            Logs.log('cls pred_image shape = {}'.format(pred_image_cls.shape))
+            """Segmentation Prediction"""
+            preds = self.segnet.predict(i_image=blocks)  # N-by256-by-256-by-1 for example.
+            """Scaling preds to be same as the original"""
+            spreds = []
+            for pred in preds:
+                spreds.append(SupFns.scale_mask(i_mask=pred, i_tsize=self.vseg_isize))
+            preds      = self.backward_block_convert(spreds, num_blk_height, num_blk_width)
+            pred_image_seg = self.join_blks(i_blks=preds, i_steps=self.vseg_strides, i_overlapped_adjust=True)
+            Logs.log('seg pred_image shape = {}'.format(pred_image_seg.shape))
+            pred_image = (pred_image_cls * pred_image_seg).astype(np.uint8)
+            if self.vdebug:
+                plt.subplot(1, 4, 1)
+                plt.imshow(i_image)
+                plt.subplot(1, 4, 2)
+                plt.imshow(pred_image_cls)
+                plt.subplot(1, 4, 3)
+                plt.imshow(pred_image_seg)
+                plt.subplot(1, 4, 4)
+                plt.imshow(pred_image)
+                plt.show()
+            else:
+                pass
+            return pred_image
+        else:
+            return False
     def predict(self,i_image=None):
         assert isinstance(i_image,np.ndarray), 'Got type: {}'.format(type(i_image))
         """Prediction"""

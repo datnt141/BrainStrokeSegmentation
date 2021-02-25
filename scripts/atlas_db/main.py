@@ -66,7 +66,7 @@ if __name__ == '__main__':
     train_db, val_db = atlas_dber.get_data(i_fold_index=fold_index,i_axis=2)
     trainer.train(i_train_db=train_db, i_val_db=val_db)                      #(Fixed)
     """2D Evaluation"""
-    trainer.eval(i_db=val_db)                                                # (Fixed)
+    #trainer.eval(i_db=val_db)                                                # (Fixed)
     """3D Evaluation"""
     val_db = atlas_dber.get_val_patient(i_fold_index=fold_index,i_axis=2)
     trainer.eval3d(i_db=val_db)
