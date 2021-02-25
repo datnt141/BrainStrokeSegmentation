@@ -140,6 +140,7 @@ class StackedCnnUNets:
         evaluer = SegMetrics_3D()
         measures, measure_mean, measure_std, global_measures = evaluer.measures(i_labels=labels,i_preds=preds,i_object_index=1)
         Logs.log('Measure shape (3D) = {}'.format(measures.shape))
+        Logs.log_matrix(i_str='Details',i_matrix=measures)
         Logs.log('Measure mean  (3D) = {}'.format(measure_mean))
         Logs.log('Measure std   (3D) = {}'.format(measure_std))
         Logs.log('Measuge Global(3D) = {}'.format(global_measures))
