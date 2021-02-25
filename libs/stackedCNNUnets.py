@@ -15,7 +15,7 @@ class StackedCnnUNets:
     vcls_params      = None           # Clsnet parameter
     vseg_params      = None           # Segnet parameters
     vcls_isize       = (32, 32)       # Size of block for clsnet
-    vseg_isize       = (64, 64)       # Size ò block for segnet
+    vseg_isize       = (64, 64)       # Size of block for segnet
     vcls_strides     = (16, 16)       # Stride for taking blocks for clsnet
     vseg_strides     = (16, 16)       # Stride for taking blocks for segnet
     vcls_sgray_level = 0              # Threshold for removing dark blocks (Smallest gray level of considered blocks)
