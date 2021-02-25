@@ -120,8 +120,6 @@ class StackedCnnUNets:
         preds,labels = [],[]
         image_index = 0
         for index, patient in enumerate(i_db):
-            if index>1:
-                break
             p_preds,p_labels = [],[]
             images, masks = patient
             num_images = images.shape[-1]
