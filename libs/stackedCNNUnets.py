@@ -141,10 +141,10 @@ class StackedCnnUNets:
         """Performance measurement"""
         evaluer = SegMetrics_3D()
         measures, measure_mean, measure_std, global_measures = evaluer.measures(i_labels=labels,i_preds=preds,i_object_index=1)
-        Logs.log('Measure shape = {}'.format(measures.shape))
-        Logs.log('Measure mean  = {}'.format(measure_mean))
-        Logs.log('Measure std   = {}'.format(measure_std))
-        Logs.log('Measuge Global= {}'.format(global_measures))
+        Logs.log('Measure shape  (3D) = {}'.format(measures.shape))
+        Logs.log('Measure mean   (3D) = {}'.format(measure_mean))
+        Logs.log('Measure std    (3D) = {}'.format(measure_std))
+        Logs.log('Measuge Global (3D) = {}'.format(global_measures))
         return labels, preds
     """Predictions"""
     def cls_predict(self,i_image=None):
