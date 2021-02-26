@@ -5,7 +5,7 @@ from libs.datasets.ich_db import ICH_DB
 from libs.stackedCNNUnets import StackedCnnUNets
 if __name__ == '__main__':
     num_folds  = 5
-    fold_index = 2
+    fold_index = 1
     """=================================Clsnet Parameters============================================================"""
     ckpts      = os.path.join(os.getcwd(), 'ckpts', 'Fold_{}_of_{}'.format(fold_index, num_folds))
     cls_params = SysParams()
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     StackedCnnUNets.vseg_params      = seg_params # Segmentation network parameters                              (Fixed)
     StackedCnnUNets.vcls_isize       = (64, 64)   # Size of block for clsnet                                     (*)
     StackedCnnUNets.vseg_isize       = (64, 64)   # Size ò block for segnet                                      (*)
-    StackedCnnUNets.vcls_strides     = (64, 64)   # Stride for taking blocks for clsnet                          (*)
-    StackedCnnUNets.vseg_strides     = (64, 64)   # Stride for taking blocks for segnet                          (*)
+    StackedCnnUNets.vcls_strides     = (32, 32)   # Stride for taking blocks for clsnet                          (*)
+    StackedCnnUNets.vseg_strides     = (32, 32)   # Stride for taking blocks for segnet                          (*)
     StackedCnnUNets.vcls_sgray_level = 50         # Threshold for removing dark blocks                           (Fixed)
     StackedCnnUNets.vcls_object_size = 100        # Threshold for deciding blocks with/without gnd object        (Fixed)
     StackedCnnUNets.vseg_object_size = 100        # Threshold for deciding blocks with/without gnd object        (Fixed)

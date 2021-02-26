@@ -307,7 +307,6 @@ class StackedCnnUNets:
             return pred_image
         else:
             return False
-    @get_proc_time
     def predict(self,i_image=None):
         assert isinstance(i_image,np.ndarray), 'Got type: {}'.format(type(i_image))
         """Prediction"""
