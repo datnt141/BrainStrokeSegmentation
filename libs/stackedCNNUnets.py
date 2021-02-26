@@ -445,25 +445,33 @@ class StackedCnnUNets:
             images = (images / mask).astype(np.uint8)
         else:
             """The overalapped region is assigned by the most dominant value"""
-            assert len(images.shape)==4
-            assert images.shape[-1]==1
-            batch,height,width,depth = images.shape
-            image = np.zeros(shape=(height, width, 1))
-            for h in range(height):
-                for w in range(width):
-                    vec = images[:,h,w,:]
-                    """Find the dominant value in the vec"""
-                    max_vec = int(np.max(vec))
-                    max_index, max_val = 0, 0
-                    for level in range(1,max_vec+1):
-                        sum_val = np.sum(vec==level)
-                        if sum_val>max_val:
-                            max_val   = sum_val
-                            max_index = level
-                        else:
-                            pass
-                    image[h,w,:]=max_index
-            images = image.copy()
+            min_val = int(np.min(images))
+            max_val = int(np.max(images))
+            if min_val ==0 and max_val<=1:
+                """The below code only valid for single-object segmentation"""
+                images = np.sum(images,axis=0)
+                images = (images>0).astype(np.uint8)
+            else:
+                """The bellow code is valid for multi-object segmentation"""
+                assert len(images.shape)==4
+                assert images.shape[-1]==1
+                batch,height,width,depth = images.shape
+                image = np.zeros(shape=(height, width, 1))
+                for h in range(height):
+                    for w in range(width):
+                        vec = images[:,h,w,:]
+                        #Find the dominant value in the vec
+                        max_vec = int(np.max(vec))
+                        max_index, max_val = 0, 0
+                        for level in range(1,max_vec+1):
+                            sum_val = np.sum(vec==level)
+                            if sum_val>max_val:
+                                max_val   = sum_val
+                                max_index = level
+                            else:
+                                pass
+                        image[h,w,:]=max_index
+                images = image.copy()
         return images
     @classmethod
     def forward_block_convert(cls,i_blocks):
