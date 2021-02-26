@@ -189,11 +189,11 @@ class ImageClsNets:
             print('(ClsNet) Evaluating index = {}'.format(index))
             assert isinstance(element,(list,tuple,dict))
             if isinstance(element,(list,tuple)):
-                image = element[0] #As my design. Shape = (height, width, nchannels)
-                label = element[1] #As my design. Shape = (num_classes,) (one-hot)
+                image = element[0] #As my design. Shape = (None, height, width, nchannels)
+                label = element[1] #As my design. Shape = (None, num_classes) (one-hot)
             else:
-                image = element['image'] #As my design. Shape = (height, width, nchannels)
-                label = element['label'] #As my design. Shape = (num_classes,) (one-hot)
+                image = element['image'] #As my design. Shape = (None, height, width, nchannels)
+                label = element['label'] #As my design. Shape = (None, num_classes) (one-hot)
             if isinstance(image,(tf.Tensor,tf.SparseTensor)):
                 image = image.numpy()
             else:
@@ -201,24 +201,27 @@ class ImageClsNets:
             if isinstance(label,(tf.Tensor,tf.SparseTensor)):
                 label = label.numpy()
             else:
+                assert isinstance(label,np.ndarray)
                 label = label.astype(np.int)
-            assert isinstance(image,np.ndarray), 'Got type: {}'.format(type(image))
             """Prepare data"""
+            assert len(label.shape) in (1, 2)
             assert len(image.shape) in (2, 3, 4)
             if len(image.shape) in (2, 3):  # Single image
-                if len(image.shape) == 2:  # Gray image with shape (height,width)
+                if len(image.shape) == 2:   # Gray image with shape (height,width)
                     image = np.expand_dims(image, axis=-1)  # Shape: (height, width, 1)
                 else:  # Shape: (height, width, depth)
                     assert image.shape[-1] in (1, 3)
                 """Making batch for single image"""
-                assert label.dtype in np_int_types, 'Got type: {}'.format(type(label))
                 image = np.expand_dims(image, 0) #Shape: (1, height, width, depth)
-                label = np.expand_dims(label, 0) #Shape: (1, )
+                if len(label.shape) == 1:
+                    label = np.expand_dims(label, 0) #Shape: (1, num_classes)
+                else:
+                    assert label.shape[0]==1 #Single image
             else:  # Batch of images
-                assert isinstance(label,np.ndarray),'Got type: {}'.format(type(label))
-                assert len(label.shape) == 1, 'Got shape: {}'.format(label.shape)  # Shape: (None, )
                 assert len(image.shape) == 4, 'Got shape: {}'.format(image.shape)  # Shape: (None, height, width, depth)
-                assert len(label.shape) == image.shape[0], 'Got shape: {} vs {}'.format(label.shape,image.shape) #Same batch size
+                assert len(label.shape) == 2 #Shape (None, num_classes)
+                assert image.shape[-1] in (1, 3)
+            assert label.shape[0] == image.shape[0] #Same batch-size
             """Prediction"""
             cpreds = self.predict(i_image=image) #Shape (None,num_classes)
             for pindex, cpred in enumerate(cpreds):
@@ -260,7 +263,6 @@ class ImageClsNets:
             assert i_image.shape[-1] in (1,3)
             images = i_image.copy()
         assert len(images.shape) == 4, 'Got shape: {}'.format(images.shape)
-        assert images.dtype in (np.uint8, ), 'Got dtype: {}'.format(images.dtype)
         """Size Normalization"""
         nimages = []
         for image in images:
@@ -279,7 +281,10 @@ class ImageClsNets:
         assert len(images.shape) == 4 , 'Got shape: {} with length = {}'.format(images.shape,len(images.shape))
         assert images.shape[-1] in (1, 3), 'Got shape: {}'.format(images.shape)
         """Normalization"""
-        images = images/255.0
+        if images.dtype in (np.uint8,):
+            images = images/255.0
+        else:
+            pass
         """Prediction"""
         preds  = self.model.predict(images) #Shape  = (None, num_classes)
         return softmax(preds,axis=-1)       #Shape  = (None, num_classes). As my design, output of network is logit. So we do softmax here

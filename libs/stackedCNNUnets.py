@@ -96,11 +96,13 @@ class StackedCnnUNets:
         cls_train_db = self.load_data(i_db=i_train_db,i_cls_flag=True,i_train_flag=True)
         cls_val_db   = self.load_data(i_db=i_val_db,i_cls_flag=True,i_train_flag=False)
         self.clsnet.train(i_train_db=cls_train_db,i_val_db=cls_val_db)
+        self.clsnet.eval(i_db=cls_val_db)
         """Prepaere data for segnet according to segnet params"""
         seg_train_db = self.load_data(i_db=i_train_db,i_cls_flag=False,i_train_flag=True)
         seg_val_db   = self.load_data(i_db=i_val_db,i_cls_flag=False,i_train_flag=False)
         """Adjusting new input size"""
         self.segnet.train(i_train_db=seg_train_db,i_val_db=seg_val_db)
+        self.segnet.eval(i_db=seg_val_db)
     def eval(self,i_db=None):
         assert isinstance(i_db,(list,tuple)),'Got type: {}'.format(type(i_db))
         labels, preds = [],[]
