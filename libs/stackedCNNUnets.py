@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 from libs.logs import Logs
 import matplotlib.pyplot as plt
@@ -126,7 +127,11 @@ class StackedCnnUNets:
             for p_index in range(num_images):
                 p_image= images[:,:,p_index]
                 p_mask = masks[:,:,p_index]
+                start_time = time.time_ns()
                 pred_image = self.predict(i_image=p_image)
+                end_time   = time.time_ns()
+                proc_time  = (end_time-start_time)/1e6 #Unit is ms
+                Logs.log('Processing time = {}'.format(proc_time))
                 p_preds.append(pred_image)
                 p_labels.append(p_mask)
                 Logs.log('Image index = {} with pred_shape = {} and label_shape = {}'.format(image_index,pred_image.shape,p_mask.shape))
@@ -449,8 +454,9 @@ class StackedCnnUNets:
             max_val = int(np.max(images))
             if min_val ==0 and max_val<=1:
                 """The below code only valid for single-object segmentation"""
-                images = np.sum(images,axis=0)
-                images = (images>0).astype(np.uint8)
+                #images = np.sum(images,axis=0)
+                #images = (images>0).astype(np.uint8)
+                images = np.max(images,axis=0)
             else:
                 """The bellow code is valid for multi-object segmentation"""
                 assert len(images.shape)==4
