@@ -53,6 +53,16 @@ class StackedCnnUNets:
         assert self.vseg_object_size>0
         assert isinstance(self.vcls_sgray_level,int)
         assert self.vcls_sgray_level>=0
+    @staticmethod
+    def get_proc_time(i_fn=None):
+        def wrap(i_image=None):
+            start_time = time.time_ns()
+            rtn = i_fn(i_image)
+            end_time = time.time_ns()
+            proc_time = (end_time - start_time)/1e6 #Unit miliseconds
+            Logs.log('Processing time X = {}'.format(proc_time))
+            return rtn
+        return wrap
     def init_params(self,i_params):
         assert isinstance(i_params, (SysParams,dict))
         Logs.log('-'*100)
@@ -297,6 +307,7 @@ class StackedCnnUNets:
             return pred_image
         else:
             return False
+    @get_proc_time
     def predict(self,i_image=None):
         assert isinstance(i_image,np.ndarray), 'Got type: {}'.format(type(i_image))
         """Prediction"""

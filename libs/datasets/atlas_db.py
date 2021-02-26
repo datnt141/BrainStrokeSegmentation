@@ -162,9 +162,9 @@ class ATLAS_STANDARD:
                     label = SupFns.scale_mask(i_mask=label, i_tsize=self.tsize)
                     val_images.append(image)
                     val_labels.append(label)
-                    print(image.shape,label.shape)
-                val_images = np.array(val_images)
-                val_labels = np.array(val_labels)
+                val_images = np.swapaxes(np.swapaxes(np.squeeze(np.array(val_images)),0,1),1,2)
+                val_labels = np.swapaxes(np.swapaxes(np.squeeze(np.array(val_labels)),0,1),1,2)
+                print(val_images.shape,val_labels.shape)
                 val_patients.append((val_images,val_labels)) #Format: ((images,masks),...,(images,masks))
                 cmp = ListTuples.compare(i_x=val_images.shape, i_y=val_labels.shape)
                 assert np.sum(cmp) == 0
