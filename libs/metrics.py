@@ -236,7 +236,6 @@ class SegMetrics_3D:
         assert isinstance(i_preds,np.ndarray)
         assert isinstance(i_object_index,int)
         assert i_object_index>0
-        print(i_labels.shape,i_preds.shape)
         if len(i_labels.shape)==3:
             i_labels = np.expand_dims(i_labels,axis=-1)
         else:
@@ -274,7 +273,6 @@ class SegMetrics_3D:
         measures.append(SegMetrics_2D.get_recall(i_TP=TPs, i_FN=FNs))                        # Sensitivity = Recall
         measures.append(SegMetrics_2D.get_specificity(i_TN=TNs, i_FP=FPs))                   # Specificity
         measures.append(SegMetrics_2D.get_accuracy(i_TP=TPs, i_TN=TNs, i_FP=FPs, i_FN=FNs))  # Overall Accuracy
-        print(measures)
         return measures
     def measures(self,i_labels=None,i_preds=None,i_object_index=1):
         assert isinstance(i_labels,(list,tuple))
@@ -296,6 +294,7 @@ class SegMetrics_3D:
         global_measures.append(SegMetrics_2D.get_recall(i_TP=self.TPs, i_FN=self.FNs))                  # Sensitivity = Recall
         global_measures.append(SegMetrics_2D.get_specificity(i_TN=self.TNs, i_FP=self.FPs))             # Specificity
         global_measures.append(SegMetrics_2D.get_accuracy(i_TP=self.TPs, i_TN=self.TNs, i_FP=self.FPs, i_FN=self.FNs))  # Overall Accuracy
+        global_measures = np.array(global_measures)
         """2D Performance measurement"""
         """Performance measurement"""
         evaluer = SegMetrics_2D(i_num_classes=i_object_index+1, i_care_background=False)

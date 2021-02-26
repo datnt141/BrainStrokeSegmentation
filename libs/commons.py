@@ -72,6 +72,24 @@ class SupFns:
         mask  = np.expand_dims(np.max(masks,axis=-1),axis=-1)  # Selecting the object with small index. Alternative is reduce_max
         return mask #Return shape: (i_tsize,i_tsize,1)
     @classmethod
+    def round_matrix(cls,i_matrix=None):
+        assert isinstance(i_matrix,np.ndarray)
+        assert len(i_matrix.shape) in (1,2)
+        rtn = []
+        if len(i_matrix.shape)==1:
+            for item in i_matrix:
+                x = round(item,3)
+                rtn.append(x)
+        else:
+            height, width = i_matrix.shape
+            for h in range(height):
+                rows = []
+                for w in range(width):
+                    x = round(i_matrix[h,w],3)
+                    rows.append(x)
+                rtn.append(rows)
+        return rtn
+    @classmethod
     def encode_binary_mask(cls,i_mask=None):
         """Converts a binary mask into OID challenge encoding ascii text."""
         assert isinstance(i_mask, np.ndarray)
