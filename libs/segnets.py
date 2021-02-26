@@ -238,19 +238,15 @@ class ImageSegNets:
                 image = np.expand_dims(image,0)
                 mask  = np.expand_dims(mask,0)
             else:#Batch of images
-                assert len(image.shape)==4 #Shape: (None, height, width, depth)
-                assert len(mask.shape) in (3,4)
-                if len(mask.shape)==3:
-                    mask = np.expand_dims(mask,axis=-1)
-                else:
-                    assert mask.shape[-1] == 1, 'Got shape: {}'.format(mask.shape)
+                assert len(image.shape)== 4 #Shape: (None, height, width, depth)
+                assert len(mask.shape) == 4 #Shape: (None, height, width, num_classes)
             assert len(image.shape)==4, 'Got shape: {}'.format(image.shape) #Shape: (None, height, width, depth)
-            assert len(mask.shape)==4, 'Got shape: {}'.format(mask.shape)   #Shape: (None, height, width, 1)
+            assert len(mask.shape)==4, 'Got shape: {}'.format(mask.shape)   #Shape: (None, height, width, num_classes)
             assert image.shape[-1] in (1, 3), 'Got shape: {}'.format(image.shape)
-            assert mask.shape[-1] == 1, 'Got shape: {}'.format(mask.shape)
-            cpreds = self.predict(i_image=image)    # Shape = (1, height, width, 1) as procesisng single image
+            cpreds = self.predict(i_image=image)    # Shape = (None, height, width, 1) as procesisng single image
             for pindex, cpred in enumerate(cpreds):
-                cmask = mask[pindex]
+                cmask = np.expand_dims(np.argmax(mask[pindex],axis=-1),axis=-1)
+                print(cpred.shape,cmask.shape)
                 if np.sum(ListTuples.compare(i_x=cmask.shape,i_y=self.mask_shape)):
                     cmask = SupFns.scale_mask(i_mask=cmask,i_tsize=self.mask_shape)
                 else:
