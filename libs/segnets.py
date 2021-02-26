@@ -205,11 +205,11 @@ class ImageSegNets:
             print('(SegNets) Evaluating index = {}'.format(index))
             assert isinstance(element, (list, tuple, dict))
             if isinstance(element, (list, tuple)):
-                image = element[0]  # As my design. Shape = (height, width, nchannels)
-                mask  = element[1]  # As my design. Shape = (height, width, num_classes)
+                image = element[0]        # As my design. Shape = (None, height, width, nchannels)
+                mask  = element[1]        # As my design. Shape = (None, height, width, num_classes)
             else:
-                image = element['image']  # As my design. Shape = (height, width, nchannels)
-                mask  = element['label']  # As my design. Shape = (height, width, num_classes)
+                image = element['image']  # As my design. Shape = (None, height, width, nchannels)
+                mask  = element['label']  # As my design. Shape = (None, height, width, num_classes)
             if isinstance(image,(tf.Tensor,tf.SparseTensor)):
                 image = image.numpy()
             else:
@@ -298,7 +298,6 @@ class ImageSegNets:
         else:#For batch of image
             images = i_image.copy()
         assert len(images.shape)==4, 'Got shape: {}'.format(images.shape)
-        assert images.dtype in (np.uint8,), 'Got type: {}'.format(images.dtype)
         assert images.shape[-1] in (1,3),'Got shape: {}'.format(images.shape)
         """Size Normalization"""
         nimages = []
