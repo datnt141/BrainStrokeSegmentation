@@ -454,8 +454,6 @@ class StackedCnnUNets:
             max_val = int(np.max(images))
             if min_val ==0 and max_val<=1:
                 """The below code only valid for single-object segmentation"""
-                #images = np.sum(images,axis=0)
-                #images = (images>0).astype(np.uint8)
                 images = np.max(images,axis=0)
             else:
                 """The bellow code is valid for multi-object segmentation"""

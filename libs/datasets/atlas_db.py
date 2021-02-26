@@ -160,11 +160,9 @@ class ATLAS_STANDARD:
                     image = SupFns.imresize(i_image=image, i_tsize=self.tsize)
                     label = (label > 0).astype(np.int)
                     label = SupFns.scale_mask(i_mask=label, i_tsize=self.tsize)
-                    if index in val_index:
-                        val_images.append(image)
-                        val_labels.append(label)
-                    else:
-                        raise Exception()
+                    val_images.append(image)
+                    val_labels.append(label)
+                    print(image.shape,label.shape)
                 val_images = np.array(val_images)
                 val_labels = np.array(val_labels)
                 val_patients.append((val_images,val_labels)) #Format: ((images,masks),...,(images,masks))
