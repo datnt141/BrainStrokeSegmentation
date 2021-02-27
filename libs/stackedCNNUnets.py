@@ -596,14 +596,14 @@ class StackedCnnUNets:
             """Flatten blocks. As my design of get and joint blocks funs"""
             blocks    = self.forward_block_convert(blocks)
             blk_masks = self.forward_block_convert(blk_masks)
-            mask_size = int(np.sum((mask>0).astype(np.int)))*0.75
+            #mask_size = int(np.sum((mask>0).astype(np.int)))*0.75
             for blk_ind,blk in enumerate(blocks):
                 blk_mask = blk_masks[blk_ind]
                 assert isinstance(blk_mask,np.ndarray)
                 if i_cls_flag:#Taking blocks for clsnets
                     if i_train_flag:
                         if np.average(blk) >= threshold:
-                            if np.sum(blk_mask)>=min(mask_size,object_size):#Count number of object pixels
+                            if np.sum(blk_mask)>=object_size:#Count number of object pixels
                                 positive_blks.append(blk)
                             else:
                                 negative_blks.append(blk)
@@ -616,7 +616,7 @@ class StackedCnnUNets:
                             negative_blks.append(blk)
                 else:#Taking blocks for segnets
                     if i_train_flag:
-                        if np.sum(blk_mask)>=min(mask_size,object_size): #Only taking blocks with objects
+                        if np.sum(blk_mask)>=object_size: #Only taking blocks with objects
                             positive_blks.append(blk)        #Image
                             negative_blks.append(blk_mask)   #Mask
                         else:
@@ -629,7 +629,7 @@ class StackedCnnUNets:
                             pass
             """Complement blocks"""
             if i_train_flag:
-                min_object_size      = min(object_size,mask_size)
+                min_object_size      = object_size
                 obj_blocks,obj_masks = self.get_obj_blks(i_image=image,i_mask=mask,i_blk_sizes=blk_size,i_object_size=min_object_size)
                 for obj_index, obj_blk in enumerate(obj_blocks):
                     positive_blks.append(obj_blk)
@@ -637,7 +637,7 @@ class StackedCnnUNets:
                         pass
                     else:
                         negative_blks.append(obj_masks[obj_index])
-                print('Images: {} => Additional blocks = {} vs {} => Sizes = P: {} and N: {} --- {}'.format(index, len(obj_blocks), len(obj_masks), len(positive_blks), len(negative_blks), mask_size))
+                print('Images: {} => Additional blocks = {} vs {} => Sizes = P: {} and N: {} --- {}'.format(index, len(obj_blocks), len(obj_masks), len(positive_blks), len(negative_blks), object_size))
             else:
                 pass
         """Save data to TFRecordDB"""
