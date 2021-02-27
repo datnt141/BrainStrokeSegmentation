@@ -605,8 +605,6 @@ class StackedCnnUNets:
                         if np.average(blk) >= threshold:
                             if np.sum(blk_mask)>min(mask_size,object_size):#Count number of object pixels
                                 positive_blks.append(blk)
-                            elif np.sum(blk_mask)> 0:
-                                pass
                             else:
                                 negative_blks.append(blk)
                         else:
@@ -618,7 +616,7 @@ class StackedCnnUNets:
                             negative_blks.append(blk)
                 else:#Taking blocks for segnets
                     if i_train_flag:
-                        if np.sum(blk_mask)>min(object_size,mask_size): #Only taking blocks with objects
+                        if np.sum(blk_mask)>min(mask_size,object_size): #Only taking blocks with objects
                             positive_blks.append(blk)        #Image
                             negative_blks.append(blk_mask)   #Mask
                         else:
