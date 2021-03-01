@@ -5,14 +5,15 @@ from libs.datasets.ich_db import ICH_DB
 from libs.stackedCNNUnets import StackedCnnUNets
 if __name__ == '__main__':
     num_folds  = 5
+
     fold_index = 1
     """=================================Clsnet Parameters============================================================"""
     ckpts      = os.path.join(os.getcwd(), 'ckpts', 'Fold_{}_of_{}'.format(fold_index, num_folds))
     cls_params = SysParams()
     seg_params = SysParams()
     cls_params.vckpts          = ckpts             # Checkpoint for storing data            (Fixed)
-    cls_params.vmodel_name     = 'cCNN_tiny_tiny'  # Model name                             (*)
-    cls_params.vinput_shape    = (64, 64, 1)       # Input image shape                      (*)
+    cls_params.vmodel_name     = 'VGG16'  # Model name             cCNN_tiny_tiny                (*)
+    cls_params.vinput_shape    = (128, 128, 1)       # Input image shape                      (*)
     cls_params.vnum_classes    = 2                 # Number of target classes               (Fixed)
     cls_params.vtime_steps     = 1                 # For time-sequence classification       (Fixed)
     cls_params.vlr             = 0.0001            # Initial Learning rate                  (Fixed)
@@ -51,11 +52,11 @@ if __name__ == '__main__':
     StackedCnnUNets.vseg_params      = seg_params # Segmentation network parameters                              (Fixed)
     StackedCnnUNets.vcls_isize       = (64, 64)   # Size of block for clsnet                                     (*)
     StackedCnnUNets.vseg_isize       = (64, 64)   # Size ò block for segnet                                      (*)
-    StackedCnnUNets.vcls_strides     = (64, 64)   # Stride for taking blocks for clsnet                          (*)
-    StackedCnnUNets.vseg_strides     = (64, 64)   # Stride for taking blocks for segnet                          (*)
+    StackedCnnUNets.vcls_strides     = (32, 32)   # Stride for taking blocks for clsnet                          (*)
+    StackedCnnUNets.vseg_strides     = (32, 32)   # Stride for taking blocks for segnet                          (*)
     StackedCnnUNets.vcls_sgray_level = 30         # Threshold for removing dark blocks                           (Fixed)
-    StackedCnnUNets.vcls_object_size = 100        # Threshold for deciding blocks with/without gnd object        (Fixed)
-    StackedCnnUNets.vseg_object_size = 100        # Threshold for deciding blocks with/without gnd object        (Fixed)
+    StackedCnnUNets.vcls_object_size = 50         # Threshold for deciding blocks with/without gnd object        (Fixed)
+    StackedCnnUNets.vseg_object_size = 50         # Threshold for deciding blocks with/without gnd object        (Fixed)
     StackedCnnUNets.vcls_th          = 0          # Threshold for making decision (extension)                    (Fixed)
     StackedCnnUNets.vcls_lsm_factor  = 0          # Label smoothing factor. A number from 0 to 1                 (Fixed)
     StackedCnnUNets.vseg_lsm_factor  = 0          # Label smoothing factor. A number from 0 to 1                 (Fixed)
