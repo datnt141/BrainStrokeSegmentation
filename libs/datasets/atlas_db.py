@@ -225,7 +225,7 @@ if __name__ == '__main__':
     for element in train_db:
         img, msk = element
         print(img.shape,msk.shape)
-        if np.sum(msk)>0:
+        if np.sum(msk)>2000:
             plt.subplot(1,3,1)
             plt.imshow(img,cmap='gray')
             plt.subplot(1,3,2)
