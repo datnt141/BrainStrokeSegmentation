@@ -12,7 +12,7 @@ if __name__ == '__main__':
     seg_params = SysParams()
     cls_params.vckpts          = ckpts             # Checkpoint for storing data            (Fixed)
     cls_params.vmodel_name     = 'cCNN_tiny_tiny'  # Model name             cCNN_tiny_tiny                (*)
-    cls_params.vinput_shape    = (64, 63, 1)       # Input image shape                      (*)
+    cls_params.vinput_shape    = (64, 64, 1)       # Input image shape                      (*)
     cls_params.vnum_classes    = 2                 # Number of target classes               (Fixed)
     cls_params.vtime_steps     = 1                 # For time-sequence classification       (Fixed)
     cls_params.vlr             = 0.0001            # Initial Learning rate                  (Fixed)
