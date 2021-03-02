@@ -174,18 +174,65 @@ class ATLAS_STANDARD:
                 pass
         """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
         return val_patients
+    def get_statistics(self):
+        def cal_hist(i_image=None):
+            assert isinstance(i_image, np.ndarray)
+            assert len(i_image.shape) in (2, 3)
+            if len(i_image.shape) == 2:
+                image = np.expand_dims(i_image, axis=-1)
+            else:
+                image = i_image.copy()
+            assert image.shape[-1] in (1, 3)
+            assert image.dtype in (np.uint8,)
+            hist, bins = np.histogram(a=image, bins=range(0, 256))
+            return hist
+        train_data,val_data = self.get_data(i_fold_index=1,i_axis=2)
+        all_data = train_data + val_data
+        histograms  = []
+        for item in all_data:
+            item_image,item_label = item
+            fusion_image = item_image*item_label
+            if np.sum(fusion_image)>0:
+                histograms.append(cal_hist(i_image=fusion_image))
+            else:
+                pass
+        histograms = np.array(histograms)
+        histograms = np.sum(histograms,axis=0)
+        histograms[0]  = 0 #Background
+        histograms[-1] = 0 #White
+        """Measure of mean and std of distribution"""
+        sum_val  = 0
+        sum_item = 0
+        for index, item in enumerate(histograms):
+            sum_val  += index*item
+            sum_item += item
+        mean_val = sum_val/sum_item
+        sum_val  = 0
+        for index, item in enumerate(histograms):
+            sum_val += (index - mean_val)*(index - mean_val)*item
+        std_val = np.sqrt(sum_val/sum_item)
+        print(mean_val, std_val)
+        plt.plot(histograms)
+        plt.show()
+        return histograms,mean_val,std_val
 """=================================================================================================================="""
 if __name__ == '__main__':
     print('This module is to prepare raw data using standard ATLAS dataset')
     import matplotlib.pyplot as plt
     exampler = ATLAS_STANDARD()
+    #exampler.get_statistics()
     train_db, val_db = exampler.get_data(i_fold_index=1,i_axis=2)
     for element in train_db:
         img, msk = element
         print(img.shape,msk.shape)
-        plt.subplot(1,2,1)
-        plt.imshow(img,cmap='gray')
-        plt.subplot(1,2,2)
-        plt.imshow(msk,cmap='gray')
-        plt.show()
+        if np.sum(msk)>0:
+            plt.subplot(1,3,1)
+            plt.imshow(img,cmap='gray')
+            plt.subplot(1,3,2)
+            plt.imshow(msk,cmap='gray')
+            plt.subplot(1,3,3)
+            plt.imshow(img*msk,cmap='gray')
+            plt.show()
+        else:
+            pass
 """=================================================================================================================="""
