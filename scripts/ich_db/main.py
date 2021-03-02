@@ -5,23 +5,22 @@ from libs.datasets.ich_db import ICH_DB
 from libs.stackedCNNUnets import StackedCnnUNets
 if __name__ == '__main__':
     num_folds  = 5
-
     fold_index = 1
     """=================================Clsnet Parameters============================================================"""
     ckpts      = os.path.join(os.getcwd(), 'ckpts', 'Fold_{}_of_{}'.format(fold_index, num_folds))
     cls_params = SysParams()
     seg_params = SysParams()
     cls_params.vckpts          = ckpts             # Checkpoint for storing data            (Fixed)
-    cls_params.vmodel_name     = 'VGG16'  # Model name             cCNN_tiny_tiny                (*)
-    cls_params.vinput_shape    = (128, 128, 1)       # Input image shape                      (*)
+    cls_params.vmodel_name     = 'cCNN_tiny_tiny'  # Model name             cCNN_tiny_tiny                (*)
+    cls_params.vinput_shape    = (64, 63, 1)       # Input image shape                      (*)
     cls_params.vnum_classes    = 2                 # Number of target classes               (Fixed)
     cls_params.vtime_steps     = 1                 # For time-sequence classification       (Fixed)
     cls_params.vlr             = 0.0001            # Initial Learning rate                  (Fixed)
-    cls_params.vloss           = 'CE'              # Name of loss method                    (Fixed)
+    cls_params.vloss           = 'FL'              # Name of loss method                    (Fixed)
     cls_params.vweights        = (0.45, 0.55)      # For using weighted cross entropy       (Fixed)
     cls_params.vnum_epochs     = 20                # Number of training epochs              (Fixed)
     cls_params.vbatch_size     = 128               # Size of batch                          (Fixed)
-    cls_params.vdb_repeat      = 10                # Repeat dataset at single learing rate  (Fixed)
+    cls_params.vdb_repeat      = 1                # Repeat dataset at single learing rate  (Fixed)
     cls_params.vcontinue       = False             # Continue training or not               (Fixed)
     cls_params.vflip_ud        = True              # Flip up-down in data augmentation      (Fixed)
     cls_params.vflip_lr        = True              # Flip left-right in data augmentation   (Fixed)
@@ -29,7 +28,7 @@ if __name__ == '__main__':
     cls_params.vdebug          = False             # Debug flag                             (Fixed)
     """=================================Segnet Parameters============================================================"""
     seg_params.vckpts                    = ckpts         # Checkpoint for storing data              (Fixed)
-    seg_params.vinput_shape              = (64, 64, 1)   # Input image shape                        (*)
+    seg_params.vinput_shape              = (128, 128, 1)   # Input image shape                        (*)
     seg_params.vnum_classes              = 2             # Number of target classes                 (Fixed)
     seg_params.vseg_use_bn               = False         # Segnet parameter                         (*)
     seg_params.vseg_bblock_type          = 'residual'    # Segnet parameter                         (*)
@@ -51,12 +50,12 @@ if __name__ == '__main__':
     StackedCnnUNets.vcls_params      = cls_params # Classification network parameters                            (Fixed)
     StackedCnnUNets.vseg_params      = seg_params # Segmentation network parameters                              (Fixed)
     StackedCnnUNets.vcls_isize       = (64, 64)   # Size of block for clsnet                                     (*)
-    StackedCnnUNets.vseg_isize       = (64, 64)   # Size ò block for segnet                                      (*)
+    StackedCnnUNets.vseg_isize       = (128, 128)   # Size ò block for segnet                                      (*)
     StackedCnnUNets.vcls_strides     = (32, 32)   # Stride for taking blocks for clsnet                          (*)
-    StackedCnnUNets.vseg_strides     = (32, 32)   # Stride for taking blocks for segnet                          (*)
+    StackedCnnUNets.vseg_strides     = (64, 64)   # Stride for taking blocks for segnet                          (*)
     StackedCnnUNets.vcls_sgray_level = 30         # Threshold for removing dark blocks                           (Fixed)
-    StackedCnnUNets.vcls_object_size = 50         # Threshold for deciding blocks with/without gnd object        (Fixed)
-    StackedCnnUNets.vseg_object_size = 50         # Threshold for deciding blocks with/without gnd object        (Fixed)
+    StackedCnnUNets.vcls_object_size = 10         # Threshold for deciding blocks with/without gnd object        (Fixed)
+    StackedCnnUNets.vseg_object_size = 10         # Threshold for deciding blocks with/without gnd object        (Fixed)
     StackedCnnUNets.vcls_th          = 0          # Threshold for making decision (extension)                    (Fixed)
     StackedCnnUNets.vcls_lsm_factor  = 0          # Label smoothing factor. A number from 0 to 1                 (Fixed)
     StackedCnnUNets.vseg_lsm_factor  = 0          # Label smoothing factor. A number from 0 to 1                 (Fixed)

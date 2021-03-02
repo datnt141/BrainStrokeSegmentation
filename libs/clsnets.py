@@ -498,7 +498,7 @@ class ClsNets:
         elif self.model_name == 'cCNN_tiny':#Custom CNN
             return ClsNets.custom_cnn_tiny(i_input_shape=self.image_shape, i_filters=32, i_multiscale=False,i_num_classes=self.num_classes)
         elif self.model_name == 'cCNN_tiny_tiny':
-            return ClsNets.custom_cnn_tiny_tiny(i_input_shape=self.image_shape, i_filters=16, i_multiscale=False,i_num_classes=self.num_classes)
+            return ClsNets.custom_cnn_tiny_tiny(i_input_shape=self.image_shape, i_filters=32, i_multiscale=False,i_num_classes=self.num_classes)
         elif self.model_name == 'attCNN':
             assert self.input_shape[0]>=64
             assert self.input_shape[1]>=64
