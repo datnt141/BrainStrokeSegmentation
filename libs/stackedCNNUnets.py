@@ -605,6 +605,8 @@ class StackedCnnUNets:
                         if np.average(blk) >= threshold:
                             if np.sum(blk_mask)>=object_size:#Count number of object pixels
                                 positive_blks.append(blk)
+                            elif 0<np.sum(blk_mask)<object_size:
+                                pass
                             else:
                                 negative_blks.append(blk)
                         else:
@@ -642,7 +644,7 @@ class StackedCnnUNets:
                 pass
         """Save data to TFRecordDB"""
         blocks,labels = [],[]
-        if i_cls_flag:
+        if i_cls_flag:#Classification network
             num_positive_blocks = len(positive_blks)
             num_negative_blocks = len(negative_blks)
             num_samples         = max(num_negative_blocks,num_positive_blocks)
@@ -691,7 +693,7 @@ class StackedCnnUNets:
                 file.writelines('Num Negative Blocks: {}/{} ~= {}(%)\n'.format(num_negatives, num_blocks,num_negatives * 100 / num_blocks))
                 file.writelines('-' * 100)
                 file.writelines('\n')
-        else:
+        else:#Segmentation network
             blocks = positive_blks #List of unit8 images
             labels = negative_blks #List of uint8 images
             """Writing statistics"""
