@@ -697,11 +697,14 @@ class StackedCnnUNets:
             blocks = positive_blks #List of unit8 images
             labels = negative_blks #List of uint8 images
             """Writing statistics"""
-            num_blocks   = len(blocks)
-            total_sizes  = num_blocks * blk_size[0] * blk_size[1]
-            labels_bin   = np.array(labels)
-            labels_bin   = (labels_bin>0).astype(np.int)
-            object_sizes = np.sum(labels_bin)
+            num_blocks       = len(blocks)
+            total_sizes      = num_blocks * blk_size[0] * blk_size[1]
+
+            #labels_bin       = np.array(labels)
+            #labels_bin       = (labels_bin>0).astype(np.int)
+            #object_sizes     = np.sum(labels_bin)
+
+            object_sizes     = np.sum([np.sum(label) for label in labels])
             non_object_sizes = total_sizes - object_sizes
             object_sizes     = np.array(object_sizes,dtype=np.int64)
             non_object_sizes = np.array(non_object_sizes,dtype=np.int64)
