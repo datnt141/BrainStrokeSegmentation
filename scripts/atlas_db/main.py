@@ -5,7 +5,7 @@ from libs.stackedCNNUnets import StackedCnnUNets
 from libs.datasets.atlas_db import ATLAS_STANDARD
 if __name__ == '__main__':
     num_folds  = 5
-    fold_index = 1
+    fold_index = 2
     """=================================Clsnet Parameters============================================================"""
     ckpts      = os.path.join(os.getcwd(), 'ckpts', 'Fold_{}_of_{}'.format(fold_index, num_folds))
     cls_params = SysParams()
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     cls_params.vweights        = (0.45, 0.55)      # For using weighted cross entropy       (Fixed)
     cls_params.vnum_epochs     = 10                # Number of training epochs              (Fixed)
     cls_params.vbatch_size     = 128               # Size of batch                          (Fixed)
-    cls_params.vdb_repeat      = 1                 # Repeat dataset at single learing rate  (Fixed)
+    cls_params.vdb_repeat      = 3                 # Repeat dataset at single learing rate  (Fixed)
     cls_params.vlsm_factor     = 0.2               # Label smoothing factor                 (Fixed)
     cls_params.vcontinue       = False             # Continue training or not               (Fixed)
     cls_params.vflip_ud        = True              # Flip up-down in data augmentation      (Fixed)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     seg_params.vweights                  = (0.45, 0.55)  # For using weighted cross entropy         (Fixed)
     seg_params.vnum_epochs               = 20            # Number of training epochs                (Fixed)
     seg_params.vbatch_size               = 64            # Size of batch                            (Fixed)
-    seg_params.vdb_repeat                = 2             # Repeat dataset at single learing rate    (Fixed)
+    seg_params.vdb_repeat                = 5             # Repeat dataset at single learing rate    (Fixed)
     seg_params.vlsm_factor               = 0.0           # Label smoothing factor                   (Fixed)
     seg_params.vcare_background          = False         # Consider background as an object or not  (Fixed)
     seg_params.vflip_ud                  = True          # Flip up-down in data augmentation        (Fixed)
