@@ -1,8 +1,10 @@
 import os
 import gzip
 import shutil
+import imageio
 import numpy as np
 import nibabel as nib
+from libs.logs import Logs
 from libs.datasets.nfolds import sNFolds
 from libs.commons import ListTuples,SupFns
 """=================================================================================================================="""
@@ -138,7 +140,7 @@ class ATLAS_STANDARD:
         assert isinstance(i_fold_index, int), 'Got type: {}'.format(type(i_fold_index))
         assert 0 < i_fold_index <= self.num_folds
         assert isinstance(i_axis, int)  # Axis of 3D volume where we taking scan images
-        assert i_axis in (0, 1, 2)  # As the 3D volume of scan images
+        assert i_axis in (0, 1, 2)      # As the 3D volume of scan images
         train_index, val_index = self.nfolds(i_fold_index=i_fold_index)
         val_patients = []
         for index, patient in enumerate(self.patients):
@@ -164,12 +166,27 @@ class ATLAS_STANDARD:
                     val_labels.append(label)
                 val_images = np.swapaxes(np.swapaxes(np.squeeze(np.array(val_images)),0,1),1,2)
                 val_labels = np.swapaxes(np.swapaxes(np.squeeze(np.array(val_labels)),0,1),1,2)
-                print(val_images.shape,val_labels.shape)
+                Logs.log('3D Image Shape = {} vs {} has {}'.format(val_images.shape, val_labels.shape, np.sum(val_labels)))
                 val_patients.append((val_images,val_labels)) #Format: ((images,masks),...,(images,masks))
                 cmp = ListTuples.compare(i_x=val_images.shape, i_y=val_labels.shape)
                 assert np.sum(cmp) == 0
                 assert np.min(val_labels)==0
                 assert np.max(val_labels)==1
+                """Saving images"""
+                ckpt_path = os.path.join(os.getcwd(),'Val_{}'.format(i_fold_index),'Patient_{}'.format(len(val_patients)))
+                if os.path.exists(ckpt_path):
+                    pass
+                else:
+                    os.makedirs(ckpt_path)
+                num_images = val_images.shape[-1]
+                for sindex in range(num_images):
+                    simage_path = os.path.join(ckpt_path,'image_{}.jpg'.format(sindex))
+                    slabel_path = os.path.join(ckpt_path, 'label_{}.jpg'.format(sindex))
+                    simage = val_images[:,:,sindex]
+                    slabel = val_labels[:,:,sindex]
+                    slabel = (slabel*255).astype(np.uint8)
+                    imageio.imwrite(simage_path,simage)
+                    imageio.imwrite(slabel_path,slabel)
             else:
                 pass
         """Note: image is normal color images (0-255) and labels is index image (dytpe = np.uint8)"""
